@@ -1,0 +1,567 @@
+<html>
+<head>
+
+  <!--
+    Cube Server Browser is released under the terms of the AGPLv3 license.
+    https://github.com/tpoechtrager/....?
+  -->
+
+  <title>Cube Server Browser</title>
+  <link rel="shortcut icon" href="/favicon.ico">
+  <link rel="stylesheet" type="text/css" href="style.css">
+  <script type="text/javascript" src="jquery-1.11.3.min.js"></script>
+  <script type="text/javascript" src="jquery.tablesorter.min.js"></script>
+  <script type="text/javascript" src="jquery.tablesorter.widgets.min.js">
+  </script>
+  <script type="text/javascript" src="funcs.js"></script>
+  
+  <meta http-equiv="cache-control" content="max-age=0" />
+  <meta http-equiv="cache-control" content="no-cache" />
+  <meta http-equiv="expires" content="0" />
+  <meta http-equiv="expires" content="Tue, 01 Jan 1980 1:00:00 GMT" />
+  <meta http-equiv="pragma" content="no-cache" />
+
+</head>
+<body>
+
+<div id="wrapper">
+  <div align="center"><br /><font size="-1" id="games"></font></div>
+  <br />
+  <div id="table" cellspacing="0" cellpadding="0"></div>
+  <div align="center">
+    <font size="-1">
+      <a href="?settings" onclick="showPersonalSettings(); return false;">
+       personal settings</a>
+    </font>
+  </div>
+</div>
+
+<script type="text/javascript">
+
+//
+// Misc
+//
+
+var unknown = '&lt;unknown&gt;';
+
+//
+// Style
+//
+
+function onSortEnd() {
+  $("tr:nth-child(odd)").addClass("alt");
+  $("tr:nth-child(even)").removeClass("alt");
+}
+
+//
+// Generic Functions
+//
+
+var timer = null;
+var updateInterval;
+
+function setUpdateFunction(fun) {
+  if (timer)
+    clearTimeout(timer);
+  fun();
+  timer = setInterval(fun, updateInterval);
+}
+
+function changeUrl(url) {
+  // TODO: check current url
+  if (window.history.pushState)
+    window.history.pushState('', '', url);
+ // else
+ //   window.location.replace(url);
+}
+
+$.urlParam = function(name){
+  var res = new RegExp('[\?&]' + name + '=([^&#]*)')
+                       .exec(window.location.href);
+  if (!res)
+   return null;
+  else
+   return res[1] || 0;
+}
+
+function formatMilliSeconds(milliSeconds) {
+  var str = '';
+
+  var days = Math.floor(milliSeconds / (1000 * 60 * 60 * 24));
+  var hours = Math.floor((milliSeconds / (1000 * 60 * 60)) % 24);
+  var mins = Math.floor((milliSeconds / (1000 * 60)) % 60);
+  var seconds = Math.floor((milliSeconds / 1000) % 60);
+  //var millis = Math.floor(milliSeconds % 1000);
+  
+  var skipZero = true;
+
+  function fmt(val, specifier) {
+    if (!skipZero || val)
+      str += val + specifier + ' ';
+  }
+
+  fmt(days, "d");
+  fmt(hours, "h");
+  fmt(mins, "m");
+  fmt(seconds, "s");
+  //fmt(millis, "ms");
+
+  return str;
+}
+
+function xmlFindHTML(xml, name1, name2, separator, suffix) {
+  if (!suffix)
+    suffix = '';
+  if (name2)
+    return escapeHtml($(xml).find(name1).text()) + separator +
+           escapeHtml($(xml).find(name2).text()) + suffix;
+  else
+    return escapeHtml($(xml).find(name1).text());
+}
+
+function printVal(val, maxLength, noTable) {
+  if (maxLength)
+    val = val.trunc(maxLength);
+  if (noTable)
+    return val;
+  return '<td>' + val + '</td>';
+}
+
+function printValLink(val, href, onClick, maxLength, noTable) {
+  onClick += '; return false;';
+  return printVal('<a href="' + href + '" onclick="' + onClick + '">' + val +
+                  '</a>', null, noTable);
+}
+
+function printXMLVal(xml, name1, name2, separator, suffix, maxLength) {
+  return printVal(xmlFindHTML(xml, name1, name2, separator, suffix), maxLength);
+}
+
+function printXMLValLink(xml, name, href, onClick) {
+  return printValLink(xmlFindHTML(xml, name), name, href, onClick);
+}
+
+function printXMLValSeconds(xml, name) {
+  var secs = xmlFindHTML(xml, name);
+  if (secs < 0)
+    return printVal(unknown);
+  return printVal(formatMilliSeconds(secs * 1000));
+}
+
+function printXMLValMilliSeconds(xml, name) {
+  var ms = xmlFindHTML(xml, name);
+  if (ms < 0)
+    return printVal(unknown);
+  return printVal(formatMilliSeconds(ms));
+}
+
+
+function urlEncode(val) {
+  return encodeURIComponent(val);
+}
+
+//
+// Cube Server Browser Functions
+//
+
+function playerListLink(host, port) {
+  return '?game=' + selectedGame + '&server=' + host + '&port=' + port;
+  // '&desc=' + urlEncode(description);
+}
+
+//
+// Player Table
+//
+
+function getTeams(xml) {
+  var teams = [];
+  $(xml).find('player').each(function() {
+    var team = xmlFindHTML(this, 'team');
+    if (teams[team] === undefined)
+      teams[team] = [];
+    teams[team].push(this);
+  });
+  return teams;
+}
+
+function printTeamTableServerInfo(xml, desc, name1, name2, separator, suffix) {
+  return '<b>' + desc + '</b>: ' +
+         xmlFindHTML(xml, name1, name2, separator, suffix);
+}
+
+function printTeamTableServerInfos(xml) {
+  var html = '';
+  html += '<div align="center" style="font-size: 15px;">';
+  html += printTeamTableServerInfo(xml, 'Server', 'description');
+  html += '&nbsp;&nbsp;';
+  html += printTeamTableServerInfo(xml, 'Players', 'clients', 'maxclients','/');
+  html += '&nbsp;&nbsp;';
+  html += printTeamTableServerInfo(xml, 'Mode', 'gamemode');
+  html += '<br>&nbsp;&nbsp;';
+  html += printTeamTableServerInfo(xml, 'Map', 'mapname');
+  html += '&nbsp;&nbsp;';
+  html += printTeamTableServerInfo(xml, 'Time', 'timeleft');
+  html += '&nbsp;&nbsp;';
+  html += printTeamTableServerInfo(xml, 'Master', 'mastermode');
+  html += '&nbsp;&nbsp;';
+  html += printTeamTableServerInfo(xml, 'Ping', 'ping');
+  html += '<br /><br />';
+  html += '</div>';
+  return html;
+}
+
+
+function parsePlayers(xml) {
+  var html = '';
+  
+  var xml = $(xml).find('server');
+  
+  if ($(xml).find('invalid').length) {
+    $("#table").html('invalid server');
+    return;
+  }
+  
+  // TODO: server info
+  // TODO: spectator team
+  // TODO: team info
+  // TODO: online column
+  // TODO: sorter
+  
+  html += printTeamTableServerInfos($(xml).find('info'));
+  
+  html += '<div id="player_table_div">';
+  html += '<table class="table">';
+
+  var teamPlayers = getTeams(xml);
+  var teamNames = Object.keys(teamPlayers);
+  var teamHashCodes = [];
+
+  for (var i = 0; i < teamNames.length; ++i) {
+    var name = teamNames[i];
+    var players = teamPlayers[name];
+    teamHashCodes[i] = name.hashCode();
+
+    html += '<tr>';
+    html += '<td>';
+
+    html += '<div class="team_name">';
+    html += name;
+    html += '</div>';
+    html += '<table id="player_table_' + teamHashCodes[i] + '">';
+    html += '<thead>';
+    html += '<tr class="player_table_border">';
+    html += '<th>Name</th>';
+    html += '<th>Frags</th>';
+    html += '<th>Deaths</th>';
+    html += '<th>Acc</th>';
+    html += '<th>Ping</th>';
+    html += '<th>Online</th>';
+    html += '<th>Country</th>';
+    html += '<th>CN</th>';
+    html += '</tr>';
+    html += '</thead>';
+
+    for (var j = 0; j < players.length; ++j) {
+      // TODO: highlight masters, client num
+      var player = players[j];
+      var lastPlayer = j + 1 < players.length;
+
+      html += '<tr ' + (lastPlayer ? 'class="player_table_border"' : '') + '>';
+      html += printXMLVal(player, 'name');
+      html += printXMLVal(player, 'frags');
+      html += printXMLVal(player, 'deaths');
+      html += printXMLVal(player, 'accuracy', null, null, '%');
+      html += printXMLVal(player, 'ping');
+      html += printXMLValMilliSeconds(player, 'onlinetime');
+      html += printXMLVal(player, 'countrycode');
+      html += printXMLVal(player, 'clientnum');
+      html += '</tr>';
+    }
+    
+    html += '</table>';
+    html += '<br />';
+
+    html += '</td>';
+    html += '</tr>';
+  }
+
+  html += '</table>';
+  html += '</div>';
+
+  $("#table").html(html);
+
+  for (var i = 0; i < teamNames.length; ++i) {
+    $('#player_table_' + teamHashCodes[i]).tablesorter({
+      widgets: ['saveSort'],
+      headers: { 1: { sorter:'frags' } },
+      sortList: [[1,1]]
+    });
+    $('#player_table_' + teamHashCodes[i]).bind("sortEnd", onSortEnd); 
+  }
+}
+
+function getPlayers() {
+  $.ajax({
+    type: 'GET',
+    url: 'players?game=' + selectedGame + '&server=' + serverHost +
+         '&port=' + serverPort,
+    dataType: 'xml',
+    success: parsePlayers
+  });
+}
+
+function showPlayers() {
+  setUpdateFunction(getPlayers);
+  changeUrl(playerListLink(long2ip(serverHost), serverPort));
+}
+
+//
+// Server Table
+//
+
+function parseServers(xml) {
+  var html = '';
+  var tableHeader = '';
+
+  html += "<div align='center'>";
+
+  tableHeader += "<table class='table' id='server_table'>";
+  tableHeader += '<thead>';
+  tableHeader += '<tr>'
+  tableHeader += '<th>Server</th>';
+  tableHeader += '<th>Release</th>';
+  tableHeader += '<th>Players</th>';
+  tableHeader += '<th>Mode</th>';
+  tableHeader += '<th>Map</th>';
+  tableHeader += '<th>Time</th>';
+  tableHeader += '<th>Master</th>';
+  tableHeader += '<th>Country</th>';
+  tableHeader += '<th>Host:Port</th>';
+  //tableHeader += '<th>Ping</th>';
+  tableHeader += '</tr>';
+  tableHeader += '</thead>';
+
+  numServers = 0;
+
+  $(xml).find('server').each(function() {
+    // TODO
+    // no response within the last minute
+    // if ($(this).find('lastupdate').text() >= 60000)
+    //  return;
+
+    if (++numServers == 1)
+      html += tableHeader;
+
+    var extended = $(this).find('extended');
+    
+    var description = xmlFindHTML(this, 'description');
+    var host = xmlFindHTML(this, 'host');
+    var hostLong = xmlFindHTML(this, 'hostlong');
+    var port = xmlFindHTML(this, 'port');
+
+    html += '<tr>';
+
+    html += printValLink(description.trunc(45),
+                         playerListLink(host, port, description),
+                         'serverHost = ' + hostLong + '; serverPort = ' + port +
+                         '; showPlayers()');
+                         
+    html += printXMLVal(this, 'release');
+        
+    html += printXMLVal(this, 'clients', 'maxclients', '/');
+    html += printXMLVal(this, 'gamemode');
+    html += printXMLVal(this, 'mapname', null, null, null, 20); // TODO: FIXME
+    html += printXMLVal(this, 'timeleft');
+    html += printXMLVal(this, 'mastermode');
+    html += printXMLVal(this, 'countrycode'); 
+    html += printXMLVal(this, 'host', 'port', ':');
+
+    /*
+    var serverMod;
+
+    if (extended.length)
+      serverMod = xmlFindHTML(extended, 'servermod');
+
+    html += printVal(serverMod !== undefined ? serverMod : '');
+    */
+
+    //html += printXMLVal(this, 'ping');
+
+    html += '</tr>';
+  });
+
+  if (numServers >= 1)
+    html += '</table>';
+  else
+    html += "no servers";
+
+  html += '</div>';
+  $("#table").html(html);
+
+  $.tablesorter.addParser({ 
+    id: 'clients', 
+    is: function(s) { return false; }, 
+    format: function(s) { return s.split('/')[0]; }, 
+    type: 'numeric' 
+  }); 
+
+  $("#server_table").bind("sortEnd", onSortEnd); 
+
+  $('#server_table').tablesorter({
+    widgets: ['saveSort'],
+    headers: { 1: { sorter: 'clients' } },
+    sortList: [[2,1]]
+  });
+
+  // TODO save sorter
+}
+
+function getServers() {
+  $.ajax({
+    type: 'GET',
+    url: 'servers?game=' + selectedGame,
+    dataType: 'xml',
+    success: parseServers
+  });
+}
+
+function showServers() {
+  var gameParam = $.urlParam('game');
+  changeUrl('/?game=' + selectedGame);
+  setUpdateFunction(getServers);
+}
+
+//
+// Request
+//
+
+function updateGameLinks() {
+  var html = '';
+
+  for (var i = 0; i < games.length; ++i) {
+    var game = games[i][0];
+    var gameDesc = games[i][1];
+    var link = '?game=' + game;
+    var linkDesc = '';
+
+    if (game == selectedGame)
+      linkDesc += '<b>';
+    linkDesc += game;
+    if (game == selectedGame)
+      linkDesc += '</b>';
+    if (i + 1 != games.length)
+      linkDesc += '&nbsp;|&nbsp;';
+
+    var code = 'selectedGame = \'' + game + '\'; selectedGameDesc = \'' +
+               gameDesc + '\'; updateGameLinks(); showServers()';
+    //TODO: link
+    html += printValLink(linkDesc, link, code, 64, true);
+  }
+
+  
+  $('#games').html(html);
+}
+
+function processRequest() {
+  var gameParam = $.urlParam('game');
+  
+  if (gameParam) {
+    var wantedGame;
+    if ((wantedGame = findGame(gameParam))) {
+      selectedGame = wantedGame[0];
+      selectedGameDesc = wantedGame[1];
+    } else {
+      alert('unsupported game');
+    }
+  }
+
+  updateGameLinks();
+
+  serverHost = $.urlParam('server');
+  serverPort = $.urlParam('port');
+  
+  if (serverHost && serverPort) {
+    serverHost = ip2long(serverHost);
+    showPlayers();
+    return;
+  }
+
+  showServers();
+}
+
+//
+// Supported Games
+//
+
+var games = [];
+
+var selectedGame = '';
+var selectedGameDesc = '';
+
+var serverHost = null;
+var serverPort = null;
+
+function findGame(game) {
+  for (var i = 0; i < games.length; ++i)
+    if (games[i][0] == game)
+      return games[i];
+  return null;
+}
+
+function parseConfig(xml) {
+  $(xml).find('game').each(function() {
+    var name = $(this).find('name').text();
+    var desc = $(this).find('desc').text();
+    games.push([name, desc]);
+    if ($(this).find('default').length) {
+      selectedGame = name;
+      selectedGameDesc = desc;
+    }
+  });
+
+  updateInterval = $(xml).find('updateinterval').text();
+
+  if (!selectedGame.length) {
+    alert('no default game set');
+    return;
+  }
+  
+  processRequest();
+}
+
+function getConfig() {
+  $.ajax({
+    type: "GET",
+    url: 'config',
+    dataType: "xml",
+    success: parseConfig
+  });  
+}
+
+//
+// Init
+//
+
+window.onpopstate = function(event) {
+  //processRequest();
+};
+
+$(document).ready(function() {
+  if (window.location.href .indexOf("sauerworld") != -1)
+    alert('Please do not share this early and incomplete preview.\n\nThanks!');
+  if (!cookiesEnabled()) {
+    document.body.innerHTML =
+      "<div id='" + Math.random() + "' style='background-color:red; " +
+      "width:50%; margin: 0 auto; text-align:center; opacity: .1;'>" +
+      "<b><font size='+1' color='white'>" +
+      "Cube Server Browser requires Cookies to be enabled to function " + 
+      "properly.<br />Cube Server Browser does <i>NOT</i> track you, " +
+      "Dom Storage Cookies are <i>NOT</i> sent to the Server." +
+      "</font></b></div>" + document.body.innerHTML;
+  }
+  getConfig();
+});
+</script>
+
+</body>
+</html>

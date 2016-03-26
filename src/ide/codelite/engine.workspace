@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeLite_Workspace Name="engine" Database="engine.tags">
+  <Project Name="engine" Path="./engine.project" Active="Yes"/>
+  <BuildMatrix>
+    <WorkspaceConfiguration Name="Debug" Selected="yes">
+      <Project Name="engine" ConfigName="Debug"/>
+    </WorkspaceConfiguration>
+  </BuildMatrix>
+</CodeLite_Workspace>
