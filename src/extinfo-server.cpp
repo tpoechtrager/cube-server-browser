@@ -155,8 +155,7 @@ const char *Server::getGameReleaseName(char *buf, const size_t size) const {
     break;
   }
 
-  if (/*std::*/ snprintf(buf, size, "%d", protocolVersion) > 0)
-    return buf;
+  if (/*std::*/ snprintf(buf, size, "%d", protocolVersion) > 0) return buf;
 
   return "<unknown>";
 }
@@ -419,8 +418,7 @@ void Server::preparePing(network::PacketBuf &pb) {
     pb.addByte(0xFF);
     pb.addByte(0xFF);
     break;
-  default:
-    ;
+  default:;
   }
 }
 

@@ -35,9 +35,7 @@ size_t ExtInfoHost::getPlayerCount() const {
   size_t numPlayers = 0;
 
   for (const Server *server : servers) {
-    if (!server->infoOK)
-      continue;
-
+    if (!server->infoOK) continue;
     numPlayers += server->numPlayers;
   }
 

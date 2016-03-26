@@ -65,13 +65,11 @@ std::map<const std::string, Callback *> callbacks;
 //
 
 void CallbackLocker::acquire() {
-  if (isValid())
-    ++callback->inUse;
+  if (isValid()) ++callback->inUse;
 }
 
 void CallbackLocker::release() {
-  if (isValid())
-    --callback->inUse;
+  if (isValid()) --callback->inUse;
 }
 
 void CallbackLocker::operator=(CallbackLocker &&callbackLocker) {
@@ -314,8 +312,7 @@ int request(void *, MHD_Connection *connection, const char *uri, const char *met
 
     resp = MHD_create_response_from_buffer(length, buf, MHD_RESPMEM_MUST_FREE);
   } else {
-  noCompression:
-    ;
+    noCompression:;
 
     MHD_ResponseMemoryMode memoryModel;
 
@@ -382,9 +379,7 @@ int request(void *, MHD_Connection *connection, const char *uri, const char *met
   }
 
   logEntry << " [" << response.code << "]";
-
-  if (compressResponse)
-    logEntry << " [gzip]";
+  if (compressResponse) logEntry << " [gzip]";
 
   *logFile << logEntry << logFile->endl();
 
@@ -466,40 +461,33 @@ const char *htmlEncode(const char *str, char *buf, const size_t size) {
   while (*str) {
     switch (*str) {
     case '"':
-      if (!fits(5))
-        goto end;
+      if (!fits(5)) goto end;
       std::memcpy(p, "&#34;", 5);
       p += 5;
       break;
     case '&':
-      if (!fits(5))
-        goto end;
+      if (!fits(5)) goto end;
       std::memcpy(p, "&#38;", 5);
       p += 5;
       break;
     case '<':
-      if (!fits(5))
-        goto end;
+      if (!fits(5)) goto end;
       std::memcpy(p, "&#60;", 5);
       p += 5;
       break;
     case '>':
-      if (!fits(5))
-        goto end;
+      if (!fits(5)) goto end;
       std::memcpy(p, "&#62;", 5);
       p += 5;
       break;
     default:
-      if (!fits(1))
-        goto end;
+      if (!fits(1)) goto end;
       *p++ = *str;
     }
     str++;
   }
-end:
-  ;
-  if (!fits(1))
-    --p;
+  end:;
+  if (!fits(1)) --p;
   *p = '\0';
   return buf;
 }

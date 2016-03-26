@@ -307,9 +307,9 @@ signed char PacketBuf::getByteSigned() {
 }
 
 void PacketBuf::addInt(const int val) {
-  if (val < 128 && val > -127)
+  if (val < 128 && val > -127) {
     addByte(val);
-  else if (val < 0x8000 && val >= -0x8000) {
+  } else if (val < 0x8000 && val >= -0x8000) {
     addByte(0x80);
     addByte(val);
     addByte(val >> 8);
