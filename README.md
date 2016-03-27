@@ -1,4 +1,4 @@
-## Cube Server Browser ##
+# Cube Server Browser #
 
 ## Plugins ##
 
@@ -25,7 +25,7 @@ MINGW32 is not supported, please use mingw-w64 instead.
 
 `libgeoip-dev`, `libconfig-dev`, `zlib-dev` and `libenet-dev`
 
-Web Plugin: `libmicrohttpd-dev`,
+Web Plugin: `libmicrohttpd-dev`
 
 ## Setup ##
 
@@ -33,7 +33,7 @@ Web Plugin: `libmicrohttpd-dev`,
 * Run `./cube_server_browser`
 * Open http://server-ip:server-port/ in your browser
 
-### License ###
+## License ##
 
 This product includes GeoLite data created by MaxMind,
 available from http://www.maxmind.com.
