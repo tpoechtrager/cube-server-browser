@@ -28,9 +28,9 @@
 
 namespace config {
 
-#define CHECK(fallback)                                                        \
-  do {                                                                         \
-    if (!ok) return fallback;                                                  \
+#define CHECK(fallback)                                                                                                \
+  do {                                                                                                                 \
+    if (!ok) return fallback;                                                                                          \
   } while (0)
 
 void Config::printError() {
@@ -237,8 +237,7 @@ void loadSettings(Config *cfg, const Var *vars) {
 bool saveSettings(const char *fileName, const Var *vars) {
   std::FILE *f = std::fopen(fileName, "w");
 
-  if (!f)
-    return false;
+  if (!f) return false;
 
   for (size_t i = 0; vars[i].p; ++i) {
     const Var &var = vars[i];

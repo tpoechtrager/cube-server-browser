@@ -304,8 +304,7 @@ void ExtInfoHost::init(const size_t index_) {
 void ExtInfoHost::deinit() {
   {
     SharedLockGuard(&mutex);
-    if (masterUpdateThread)
-      ::info << info.desc << ": " << "waiting for master update thread..." << ::info.endl();
+    if (masterUpdateThread) ::info << info.desc << ": " << "waiting for master update thread..." << ::info.endl();
   }
 
   do {

@@ -91,32 +91,32 @@ void deinit();
 
 } // namespace plugin
 
-#define PLUGIN_INIT()                                                          \
-  const plugin::Plugin *pplugin;                                               \
-  static bool isInited = false;                                                \
-  static inline bool _init();                                                  \
-  extern "C" bool init(const plugin::Plugin *_plugin) {                        \
-    plugin::PLUGIN_API_VERSION_VAR = true; /* force reference */               \
-    if (isInited) return false;                                                \
-    pplugin = _plugin;                                                         \
-    if (!pplugin->abicheck(sizeof(plugin::Plugin))) return false;              \
-    if (_init()) {                                                             \
-      isInited = true;                                                         \
-      return true;                                                             \
-    }                                                                          \
-    return false;                                                              \
-  }                                                                            \
+#define PLUGIN_INIT()                                                                                                  \
+  const plugin::Plugin *pplugin;                                                                                       \
+  static bool isInited = false;                                                                                        \
+  static inline bool _init();                                                                                          \
+  extern "C" bool init(const plugin::Plugin *_plugin) {                                                                \
+    plugin::PLUGIN_API_VERSION_VAR = true; /* force reference */                                                       \
+    if (isInited) return false;                                                                                        \
+    pplugin = _plugin;                                                                                                 \
+    if (!pplugin->abicheck(sizeof(plugin::Plugin))) return false;                                                      \
+    if (_init()) {                                                                                                     \
+      isInited = true;                                                                                                 \
+      return true;                                                                                                     \
+    }                                                                                                                  \
+    return false;                                                                                                      \
+  }                                                                                                                    \
   static inline bool _init()
 
-#define PLUGIN_UNLOAD()                                                        \
-  static inline void _unload();                                                \
-  extern "C" void unload() {                                                   \
-    _unload();                                                                 \
-    isInited = false;                                                          \
-  }                                                                            \
+#define PLUGIN_UNLOAD()                                                                                                \
+  static inline void _unload();                                                                                        \
+  extern "C" void unload() {                                                                                           \
+    _unload();                                                                                                         \
+    isInited = false;                                                                                                  \
+  }                                                                                                                    \
   static inline void _unload()
 
-#define PLUGIN_PROCESS()                                                       \
+#define PLUGIN_PROCESS()                                                                                               \
   extern "C" void process()
 
 extern const plugin::Plugin *pplugin;

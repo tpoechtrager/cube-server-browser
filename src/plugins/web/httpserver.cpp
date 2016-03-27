@@ -278,8 +278,7 @@ int request(void *, MHD_Connection *connection, const char *uri, const char *met
     response.content << "Request-URI Too Long";
   }
 
-  if (!response.content.empty() && !response.mimeType)
-    response.mimeType = "text/html; charset=utf-8";
+  if (!response.content.empty() && !response.mimeType) response.mimeType = "text/html; charset=utf-8";
 
   //
   // Internet Explorer and friends are sending 'Accept-Encoding: deflate, gzip'
@@ -323,16 +322,14 @@ int request(void *, MHD_Connection *connection, const char *uri, const char *met
 #endif
 
     void *data = const_cast<void *>(reinterpret_cast<const void *>(response.content.data()));
-
     resp = MHD_create_response_from_buffer(response.content.length(), data, memoryModel);
   }
 
-  if (!resp)
-    return MHD_NO;
+  if (!resp) return MHD_NO;
 
-#define ADD_RESPONSE_HEADER(header, content)                                   \
-  do {                                                                         \
-    if (!MHD_add_response_header(resp, header, content)) return MHD_NO;        \
+#define ADD_RESPONSE_HEADER(header, content)                                                                           \
+  do {                                                                                                                 \
+    if (!MHD_add_response_header(resp, header, content)) return MHD_NO;                                                \
   } while (0)
 
   if (response.serverDesc) ADD_RESPONSE_HEADER(MHD_HTTP_HEADER_SERVER, response.serverDesc);
@@ -537,7 +534,7 @@ int getThreadPoolSize() {
 bool init() {
   const Version mhdVersion = Version::parse(MHD_get_version());
 
-  const char *address = plugincfg->getString("httpd.listenAddress", "0.0.0.0");
+  const char *address = plugincfg->getString("httpd.listenAddress", "0.0.0.0"); // TODO: implement.
   int port = plugincfg->getInt("httpd.listenPort", -1, 65535, 8080);
 
   wwwRoot << plugincfg->getString("httpd.wwwRoot", "");
@@ -577,8 +574,7 @@ bool init() {
     optAddressReUse[0] = {static_cast<MHD_OPTION>(25), 1u};
     optAddressReUse[1] = {MHD_OPTION_END};
   } else {
-    if ((mhdFlags & MHD_USE_DEBUG) == MHD_USE_DEBUG)
-      warn << "MHD_OPTION_LISTENING_ADDRESS_REUSE not supported" << warn.endl();
+    if ((mhdFlags & MHD_USE_DEBUG) == MHD_USE_DEBUG) warn << "MHD_OPTION_LISTENING_ADDRESS_REUSE not supported" << warn.endl();
     optAddressReUse[0] = {MHD_OPTION_END};
   }
 

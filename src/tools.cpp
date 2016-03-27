@@ -65,8 +65,7 @@ namespace tools {
 //    5: D
 //
 
-size_t parseMsg(const char *msg, std::vector<std::string> &args,
-                const bool stripEmpty) {
+size_t parseMsg(const char *msg, std::vector<std::string> &args, const bool stripEmpty) {
   std::string arg;
 
   while (*msg) {

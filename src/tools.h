@@ -57,24 +57,24 @@ struct stat;
 // Compiler feature detection
 //
 
-#define GCC_VERSION_AT_LEAST(major, minor, patch)                              \
-  (defined(__GNUC__) &&                                                        \
-   (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__) >=          \
+#define GCC_VERSION_AT_LEAST(major, minor, patch)                                                                      \
+  (defined(__GNUC__) &&                                                                                                \
+   (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__) >=                                                  \
        (major * 10000 + minor * 100 + patch))
 
-#define CLANG_VERSION_AT_LEAST(major, minor, patch)                            \
-  (defined(__clang__) && !defined(__apple_build_version__) &&                  \
-   (__clang_major__ * 10000 + __clang_minor__ * 100 + __clang_patchlevel__) >= \
+#define CLANG_VERSION_AT_LEAST(major, minor, patch)                                                                    \
+  (defined(__clang__) && !defined(__apple_build_version__) &&                                                          \
+   (__clang_major__ * 10000 + __clang_minor__ * 100 + __clang_patchlevel__) >=                                         \
        (major * 10000 + minor * 100 + patch))
 
-#define APPLE_CLANG_VERSION_AT_LEAST(major, minor, patch)                      \
-  (defined(__clang__) && defined(__apple_build_version__) &&                   \
-   (__clang_major__ * 10000 + __clang_minor__ * 100 + __clang_patchlevel__) >= \
+#define APPLE_CLANG_VERSION_AT_LEAST(major, minor, patch)                                                              \
+  (defined(__clang__) && defined(__apple_build_version__) &&                                                           \
+   (__clang_major__ * 10000 + __clang_minor__ * 100 + __clang_patchlevel__) >=                                         \
        (major * 10000 + minor * 100 + patch))
 
-#define ICC_VERSION_AT_LEAST(major, minor, patch)                              \
-  (defined(__INTEL_COMPILER) &&                                                \
-   ((__INTEL_COMPILER * 10000 + __INTEL_COMPILER_UPDATE) >=                    \
+#define ICC_VERSION_AT_LEAST(major, minor, patch)                                                                      \
+  (defined(__INTEL_COMPILER) &&                                                                                        \
+   ((__INTEL_COMPILER * 10000 + __INTEL_COMPILER_UPDATE) >=                                                            \
     ((major * 100 + minor) * 10000) + patch))
 
 #ifndef __has_include
@@ -131,9 +131,9 @@ constexpr T getListElement(const std::initializer_list<T> list, const size_t ind
 #define TLS_SUPPORTED
 #endif
 
-#if CLANG_VERSION_AT_LEAST(3, 3, 0) &&                                         \
-    (defined(__linux__) &&                                                     \
-     (defined(__i386__) || defined(__x86_64__) ||                              \
+#if CLANG_VERSION_AT_LEAST(3, 3, 0) &&                                                                                 \
+    (defined(__linux__) &&                                                                                             \
+     (defined(__i386__) || defined(__x86_64__) ||                                                                      \
       (defined(__APPLE__) && MAC_OS_X_VERSION_MIN_REQUIRED >= 1070)))
 // TODO: __linux__ && (__i386__ || __x86_64__) is too inaccurate
 #define TLS_SUPPORTED
@@ -153,8 +153,8 @@ constexpr T getListElement(const std::initializer_list<T> list, const size_t ind
 
 // Shared mutex
 
-#if defined(CXX14) && (GCC_VERSION_AT_LEAST(4, 9, 0) || defined(_MSC_VER) ||   \
-                       __has_include(<shared_mutex>)) &&                       \
+#if defined(CXX14) && (GCC_VERSION_AT_LEAST(4, 9, 0) || defined(_MSC_VER) ||                                           \
+                       __has_include(<shared_mutex>)) &&                                                               \
     (!defined(__APPLE__) || defined(__GLIBCXX__))
 #include <shared_mutex>
 #define SHARED_MUTEX_SUPPORTED
@@ -162,7 +162,7 @@ constexpr T getListElement(const std::initializer_list<T> list, const size_t ind
 
 // Inheriting constructors
 
-#if CLANG_VERSION_AT_LEAST(3, 3, 0) || GCC_VERSION_AT_LEAST(4, 8, 0) ||        \
+#if CLANG_VERSION_AT_LEAST(3, 3, 0) || GCC_VERSION_AT_LEAST(4, 8, 0) ||                                                \
     defined(_MSC_VER) || ICC_VERSION_AT_LEAST(15, 0, 0)
 #define INHERITING_CONSTRUCTORS_SUPPORTED
 #endif
@@ -260,14 +260,14 @@ public:
   SharedLockGuardImpl(T data) : data(data) { }
 };
 
-#define SharedLockGuard(data)                                                  \
-  SharedLockGuardImpl<decltype(data)> CONC(__slg_tmp, __LINE__)(data);         \
-  LockGuard<SharedLockGuardImpl<decltype(data)> *>                             \
+#define SharedLockGuard(data)                                                                                          \
+  SharedLockGuardImpl<decltype(data)> CONC(__slg_tmp, __LINE__)(data);                                                 \
+  LockGuard<SharedLockGuardImpl<decltype(data)> *>                                                                     \
       CONC(__slg, __COUNTER__)(&CONC(__slg_tmp, __LINE__))
 
-#define SharedUnlockGuard(data)                                                \
-  SharedLockGuardImpl<decltype(data)> CONC(__sulg_tmp, __LINE__)(data);        \
-  LockGuard<SharedLockGuardImpl<decltype(data, true)> *>                       \
+#define SharedUnlockGuard(data)                                                                                        \
+  SharedLockGuardImpl<decltype(data)> CONC(__sulg_tmp, __LINE__)(data);                                                \
+  LockGuard<SharedLockGuardImpl<decltype(data, true)> *>                                                               \
       CONC(__sulg, __COUNTER__)(&CONC(__sulg_tmp, __LINE__))
 #else
 #define SharedLockGuard LockGuard
