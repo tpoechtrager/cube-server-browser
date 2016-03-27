@@ -28,12 +28,6 @@
   <div align="center"><br /><font size="-1" id="games"></font></div>
   <br />
   <div id="table" cellspacing="0" cellpadding="0"></div>
-  <div align="center">
-    <font size="-1">
-      <a href="?settings" onclick="showPersonalSettings(); return false;">
-       personal settings</a>
-    </font>
-  </div>
 </div>
 
 <script type="text/javascript">
@@ -61,16 +55,14 @@ var timer = null;
 var updateInterval;
 
 function setUpdateFunction(fun) {
-  if (timer)
-    clearTimeout(timer);
+  if (timer) clearTimeout(timer);
   fun();
   timer = setInterval(fun, updateInterval);
 }
 
 function changeUrl(url) {
   // TODO: check current url
-  if (window.history.pushState)
-    window.history.pushState('', '', url);
+  if (window.history.pushState) window.history.pushState('', '', url);
  // else
  //   window.location.replace(url);
 }
@@ -96,8 +88,7 @@ function formatMilliSeconds(milliSeconds) {
   var skipZero = true;
 
   function fmt(val, specifier) {
-    if (!skipZero || val)
-      str += val + specifier + ' ';
+    if (!skipZero || val) str += val + specifier + ' ';
   }
 
   fmt(days, "d");
@@ -110,27 +101,20 @@ function formatMilliSeconds(milliSeconds) {
 }
 
 function xmlFindHTML(xml, name1, name2, separator, suffix) {
-  if (!suffix)
-    suffix = '';
-  if (name2)
-    return escapeHtml($(xml).find(name1).text()) + separator +
-           escapeHtml($(xml).find(name2).text()) + suffix;
-  else
-    return escapeHtml($(xml).find(name1).text());
+  if (!suffix) suffix = '';
+  if (name2) return escapeHtml($(xml).find(name1).text()) + separator + escapeHtml($(xml).find(name2).text()) + suffix;
+  else return escapeHtml($(xml).find(name1).text());
 }
 
 function printVal(val, maxLength, noTable) {
-  if (maxLength)
-    val = val.trunc(maxLength);
-  if (noTable)
-    return val;
+  if (maxLength) val = val.trunc(maxLength);
+  if (noTable) return val;
   return '<td>' + val + '</td>';
 }
 
 function printValLink(val, href, onClick, maxLength, noTable) {
   onClick += '; return false;';
-  return printVal('<a href="' + href + '" onclick="' + onClick + '">' + val +
-                  '</a>', null, noTable);
+  return printVal('<a href="' + href + '" onclick="' + onClick + '">' + val + '</a>', null, noTable);
 }
 
 function printXMLVal(xml, name1, name2, separator, suffix, maxLength) {
@@ -143,15 +127,13 @@ function printXMLValLink(xml, name, href, onClick) {
 
 function printXMLValSeconds(xml, name) {
   var secs = xmlFindHTML(xml, name);
-  if (secs < 0)
-    return printVal(unknown);
+  if (secs < 0) return printVal(unknown);
   return printVal(formatMilliSeconds(secs * 1000));
 }
 
 function printXMLValMilliSeconds(xml, name) {
   var ms = xmlFindHTML(xml, name);
-  if (ms < 0)
-    return printVal(unknown);
+  if (ms < 0) return printVal(unknown);
   return printVal(formatMilliSeconds(ms));
 }
 
@@ -185,8 +167,7 @@ function getTeams(xml) {
 }
 
 function printTeamTableServerInfo(xml, desc, name1, name2, separator, suffix) {
-  return '<b>' + desc + '</b>: ' +
-         xmlFindHTML(xml, name1, name2, separator, suffix);
+  return '<b>' + desc + '</b>: ' + xmlFindHTML(xml, name1, name2, separator, suffix);
 }
 
 function printTeamTableServerInfos(xml) {
@@ -194,7 +175,7 @@ function printTeamTableServerInfos(xml) {
   html += '<div align="center" style="font-size: 15px;">';
   html += printTeamTableServerInfo(xml, 'Server', 'description');
   html += '&nbsp;&nbsp;';
-  html += printTeamTableServerInfo(xml, 'Players', 'clients', 'maxclients','/');
+  html += printTeamTableServerInfo(xml, 'Players', 'clients', 'maxplayers','/');
   html += '&nbsp;&nbsp;';
   html += printTeamTableServerInfo(xml, 'Mode', 'gamemode');
   html += '<br>&nbsp;&nbsp;';
@@ -220,13 +201,7 @@ function parsePlayers(xml) {
     $("#table").html('invalid server');
     return;
   }
-  
-  // TODO: server info
-  // TODO: spectator team
-  // TODO: team info
-  // TODO: online column
-  // TODO: sorter
-  
+
   html += printTeamTableServerInfos($(xml).find('info'));
   
   html += '<div id="player_table_div">';
@@ -262,7 +237,6 @@ function parsePlayers(xml) {
     html += '</thead>';
 
     for (var j = 0; j < players.length; ++j) {
-      // TODO: highlight masters, client num
       var player = players[j];
       var lastPlayer = j + 1 < players.length;
 
@@ -303,8 +277,7 @@ function parsePlayers(xml) {
 function getPlayers() {
   $.ajax({
     type: 'GET',
-    url: 'players?game=' + selectedGame + '&server=' + serverHost +
-         '&port=' + serverPort,
+    url: 'players?game=' + selectedGame + '&server=' + serverHost + '&port=' + serverPort,
     dataType: 'xml',
     success: parsePlayers
   });
@@ -349,8 +322,7 @@ function parseServers(xml) {
     // if ($(this).find('lastupdate').text() >= 60000)
     //  return;
 
-    if (++numServers == 1)
-      html += tableHeader;
+    if (++numServers == 1) html += tableHeader;
 
     var extended = $(this).find('extended');
     
@@ -361,14 +333,12 @@ function parseServers(xml) {
 
     html += '<tr>';
 
-    html += printValLink(description.trunc(45),
-                         playerListLink(host, port, description),
-                         'serverHost = ' + hostLong + '; serverPort = ' + port +
-                         '; showPlayers()');
+    html += printValLink(description.trunc(45), playerListLink(host, port, description),
+                         'serverHost = ' + hostLong + '; serverPort = ' + port + '; showPlayers()');
                          
     html += printXMLVal(this, 'release');
         
-    html += printXMLVal(this, 'clients', 'maxclients', '/');
+    html += printXMLVal(this, 'clients', 'maxplayers', '/');
     html += printXMLVal(this, 'gamemode');
     html += printXMLVal(this, 'mapname', null, null, null, 20); // TODO: FIXME
     html += printXMLVal(this, 'timeleft');
@@ -390,10 +360,8 @@ function parseServers(xml) {
     html += '</tr>';
   });
 
-  if (numServers >= 1)
-    html += '</table>';
-  else
-    html += "no servers";
+  if (numServers >= 1) html += '</table>';
+  else html += "no servers";
 
   html += '</div>';
   $("#table").html(html);
@@ -412,8 +380,6 @@ function parseServers(xml) {
     headers: { 1: { sorter: 'clients' } },
     sortList: [[2,1]]
   });
-
-  // TODO save sorter
 }
 
 function getServers() {
@@ -502,9 +468,7 @@ var serverHost = null;
 var serverPort = null;
 
 function findGame(game) {
-  for (var i = 0; i < games.length; ++i)
-    if (games[i][0] == game)
-      return games[i];
+  for (var i = 0; i < games.length; ++i) if (games[i][0] == game) return games[i];
   return null;
 }
 

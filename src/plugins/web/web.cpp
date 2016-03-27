@@ -156,11 +156,8 @@ void serverInfo(const extinfo::Server *server, const TimeType now,
   elementPrinter.printElement("release", convertToUTF8AndEscape(server->getGameReleaseName(buf1, sizeof(buf1)), buf2));
   elementPrinter.printElement("description", convertToUTF8AndEscape(server->getDescription(), buf1));
 
-#ifndef _MSC_VER
-//#warning change maxclients -> maxplayers
-#endif
   elementPrinter.printElement("clients", server->numPlayers);
-  elementPrinter.printElement("maxclients", server->maxPlayers);
+  elementPrinter.printElement("maxplayers", server->maxPlayers);
   elementPrinter.printElement("gamemodeint", server->gameMode);
   elementPrinter.printElement("gamemode", convertToUTF8AndEscape(server->getGameModeName(), buf1));
   elementPrinter.printElement("mastermodeint", server->masterMode);
