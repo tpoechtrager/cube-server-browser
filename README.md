@@ -8,7 +8,7 @@ Web
 
 `cd src; make plugins -j...`
 
-** Supported Compilers: **
+**Supported Compilers:**
 
 * clang 3.2+, g++ 4.7+ and Visual Studio 2015
 
@@ -17,7 +17,7 @@ but not necessarily required.
 
 MINGW32 is not supported, please use mingw-w64 instead.
 
-** Supported Operating Systems: **
+**Supported Operating Systems:**
 
 * Linux, *BSD, Darwin and Windows
 
