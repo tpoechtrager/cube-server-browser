@@ -23,6 +23,7 @@
 #include <cstdio>
 #include <cctype>
 #include <cmath>
+#include <algorithm>
 #include "extinfo.h"
 #include "geoip.h"
 #include "main.h"
@@ -317,7 +318,7 @@ void readInfoReply(ExtInfoHost *host, Server *server, network::PacketBuf &pb) {
     server->protocolVersion = pb.getInt();
     server->gameMode = pb.getInt();
     server->mutators = pb.getInt();
-    server->secondsLeft = pb.getInt();
+    server->secondsLeft = std::max(0, pb.getInt());
     server->maxPlayers = pb.getInt();
     server->masterMode = pb.getInt();
     pb.getInt(); // numgamevars
@@ -339,7 +340,7 @@ void readInfoReply(ExtInfoHost *host, Server *server, network::PacketBuf &pb) {
     if (server->protocolVersion < 1128) break;
     server->gameMode = pb.getInt();
     server->numPlayers = pb.getInt();
-    server->secondsLeft = pb.getInt();
+    server->secondsLeft = pb.getInt() * 60;
     getMapString();
     getServerDescriptionString();
     server->maxPlayers = pb.getInt();
