@@ -23,17 +23,17 @@
 namespace extinfo {
 
 TimeType Player::Info::getOnlineTime(TimeType now) const {
-  if (!now) now = getMilliSeconds();
   if (connectTime == UNKNOWN_ONLINE_TIME) return UNKNOWN_ONLINE_TIME;
+  if (!now) now = getMilliSeconds();
   return now - connectTime;
 }
 
 const char *Player::Info::getOnlineTime(TimeType now, char *buf, size_t size) const {
-  if (!now) now = getMilliSeconds();
   if (connectTime == UNKNOWN_ONLINE_TIME) {
     strxcpy(buf, "<unknown>", size);
     return buf;
   }
+  if (!now) now = getMilliSeconds();
   return fmtMillis(now - connectTime, buf, size);
 }
 

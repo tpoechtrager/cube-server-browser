@@ -254,9 +254,8 @@ const char *convertCubeToUTF8(const CString &str, char *buf, const size_t size) 
 }
 
 const char *convertUTF8ToCube(const CString &str, char *buf, const size_t size) {
-  size_t len = cubetools::decodeutf8(
-      reinterpret_cast<unsigned char *>(buf), size,
-      reinterpret_cast<const unsigned char *>(*str), str.length());
+  size_t len = cubetools::decodeutf8(reinterpret_cast<unsigned char *>(buf), size,
+                                     reinterpret_cast<const unsigned char *>(*str), str.length());
   buf[std::min(len, size - 1)] = '\0';
   return buf;
 }
@@ -429,7 +428,6 @@ time_t mkgmtime(struct tm *tm) {
   time_t result = 0;
 
   for (int i = 70; i < tm->tm_year; ++i) result += isLeapYear(i) ? 366 : 365;
-
   for (int i = 0; i < tm->tm_mon; ++i) result += numDays[isLeapYear(tm->tm_year)][i];
 
   result += tm->tm_mday - 1;

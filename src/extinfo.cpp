@@ -75,22 +75,26 @@ ExtInfoHost *getExtInfoHost(const char *game) {
 }
 
 void addEventCallback(const EventCallback &eventCallback) {
-  for (ExtInfoHost &host : hosts)
-    if (host.enabled)
-      host.addEventCallback(eventCallback);
+  for (ExtInfoHost &host : hosts) if (host.enabled) host.addEventCallback(eventCallback);
 }
 
 void deleteEventCallback(const EventCallback &eventCallback) {
-  for (ExtInfoHost &host : hosts)
-    if (host.enabled)
-      host.deleteEventCallback(eventCallback);
+  for (ExtInfoHost &host : hosts) if (host.enabled) host.deleteEventCallback(eventCallback);
+}
+
+void lock() {
+  for (ExtInfoHost &host : hosts) if (host.enabled) host.mutex.lock();
+}
+
+void unlock() {
+  for (ExtInfoHost &host : hosts) if (host.enabled) host.mutex.unlock();
 }
 
 namespace {
 
 void readExtInfoReply(Server *server, network::PacketBuf &pb) {
   char text[260];
-  int type = pb.getInt();
+  int type = pb.getInt() - server->extInfoOffset;
 
   switch (type) {
   case EXT_PLAYERSTATS: {
@@ -225,17 +229,21 @@ void readExtInfoReply(Server *server, network::PacketBuf &pb) {
     server->extended.infoOK = false;
     server->extended.serverMod.reset();
 
-    // do not check for EXT_NO_ERROR due to noobmod brokenness
-    // TODO: detect noobmod
-
     if (pb.getByte() != 1 || server->isValidExtInfoPacket(type, pb, false, false) <= 0) break;
-    if (!pb.remaining()) break;
+
+    if (!pb.remaining()) {
+      // NoobLounge/Noobmod
+      if (server->host->info.identifier == SAUERBRATEN) server->extInfoOffset = 100;
+      break;
+    }
 
     int prevUptime = server->extended.uptime;
     server->extended.uptime = pb.getInt();
     server->extended.infoOK = true;
 
-    if (pb.remaining()) {
+    if (server->host->info.identifier == SAUERBRATEN && server->extInfoOffset == 100) {
+      server->extended.serverMod = SM_NOOBMOD;
+    } else if (pb.remaining()) {
       int serverMod = pb.getInt();
       if (server->isValidServerMod(serverMod)) server->extended.serverMod = static_cast<ServerMod>(serverMod);
     }

@@ -153,8 +153,7 @@ int main() {
     delete logFile;
 
 #ifdef _WIN32
-    if (retVal)
-      getchar();
+    if (retVal) getchar();
 #endif
   } while (!retVal && reloadRequest);
 

@@ -49,7 +49,12 @@ namespace extinfo {
 // Structs & Constants
 //
 
-enum GameIdentifier { SAUERBRATEN, TESSERACT, REDECLIPSE, ASSAULTCUBE };
+enum GameIdentifier {
+  SAUERBRATEN,
+  TESSERACT,
+  REDECLIPSE,
+  ASSAULTCUBE
+};
 
 struct GameInfo {
   const GameIdentifier identifier;
@@ -62,30 +67,25 @@ struct GameInfo {
 };
 
 constexpr GameInfo GAME_INFO_SAUERBRATEN = {
-  SAUERBRATEN, "sauerbraten", "Cube 2: Sauerbraten",
-  "master.sauerbraten.org", 28787, 1, true
+  SAUERBRATEN, "sauerbraten", "Cube 2: Sauerbraten", "master.sauerbraten.org", 28787, 1, true
 };
 
 constexpr GameInfo GAME_INFO_TESSERACT = {
-  TESSERACT, "tesseract", "Tesseract",
-  "master.tesseract.gg", 41999, 0, true
+  TESSERACT, "tesseract", "Tesseract", "master.tesseract.gg", 41999, 0, true
 };
 
 constexpr GameInfo GAME_INFO_REDECLIPSE = {
-  REDECLIPSE, "redeclipse", "Red Eclipse",
-  "play.redeclipse.net", 28800, 1, false
+  REDECLIPSE, "redeclipse", "Red Eclipse", "play.redeclipse.net", 28800, 1, false
 };
 
 #if 0
 constexpr GameInfo GAME_INFO_INEXOR = {
-  INEXOR, "inexor", "Inexor",
-  "master.inexor.org", 28787, 1, false
+  INEXOR, "inexor", "Inexor", "master.inexor.org", 28787, 1, false
 };
 #endif
 
 constexpr GameInfo GAME_INFO_ASSAULTCUBE = {
-  ASSAULTCUBE, "assaultcube", "AssaultCube",
-  "ms.cubers.net", 28760, 1, true
+  ASSAULTCUBE, "assaultcube", "AssaultCube", "ms.cubers.net", 28760, 1, true
 };
 
 constexpr size_t NUMGAMES = 4;
@@ -237,6 +237,7 @@ struct Server {
   struct ExtInfoHost *host;
   std::string serverHost;
   network::Address address;
+  int extInfoOffset;
   const char *country[2];
 
   bool shouldBeDeleted;
@@ -391,10 +392,15 @@ struct ExtInfoHost {
 
 PLUGIN_IMPORT extern ExtInfoHost hosts[NUMGAMES];
 
+// Operates on static variables; no locking required
 ExtInfoHost *getExtInfoHost(const char *game);
 
+// Requires locking
 void addEventCallback(const EventCallback &eventCallback);
 void deleteEventCallback(const EventCallback &eventCallback);
+
+void lock();
+void unlock();
 
 void process();
 

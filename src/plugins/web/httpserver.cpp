@@ -180,8 +180,7 @@ bool readRequestFileIntoResponseStream(Request &request, Response &response) {
 
   struct stat fileAttr;
 
-  if (stat(strFile.c_str(), &fileAttr) || !S_ISREG(fileAttr.st_mode))
-    return false;
+  if (stat(strFile.c_str(), &fileAttr) || !S_ISREG(fileAttr.st_mode)) return false;
 
   response.lastModified = fileAttr.st_mtime;
   const char *ifModifiedSince = getHeaderParamater(request, MHD_HTTP_HEADER_IF_MODIFIED_SINCE);
@@ -229,10 +228,7 @@ void *requestLogger(void *, const char *uri, struct MHD_Connection *connection) 
 
 void requestCompleted(void *, struct MHD_Connection *, void **reqCls, enum MHD_RequestTerminationCode) {
   Request *request = getRequest(reqCls);
-
-  if (!request)
-    return;
-
+  if (!request) return;
   delete request;
 }
 
@@ -241,9 +237,7 @@ int request(void *, MHD_Connection *connection, const char *uri, const char *met
   int retVal;
 
   if (std::strcmp(method, "GET")) return MHD_NO;
-
   Request *requestPtr = getRequest(reqCls);
-
   if (!requestPtr) return MHD_NO;
 
   Request &request = *requestPtr;
@@ -263,15 +257,12 @@ int request(void *, MHD_Connection *connection, const char *uri, const char *met
 
     callback = CallbackLocker(uri);
 
-    if (callback.isValid())
-      ok = callback->fun({request, response});
-    else
-      ok = readRequestFileIntoResponseStream(request, response);
+    if (callback.isValid()) ok = callback->fun({request, response});
+    else ok = readRequestFileIntoResponseStream(request, response);
 
     if (!ok) {
       response.code = MHD_HTTP_BAD_REQUEST;
-      if (response.content.empty())
-        response.content << "Bad Request";
+      if (response.content.empty()) response.content << "Bad Request";
     }
   } else {
     response.code = MHD_HTTP_REQUEST_URI_TOO_LONG;
@@ -574,7 +565,7 @@ bool init() {
     optAddressReUse[0] = {static_cast<MHD_OPTION>(25), 1u};
     optAddressReUse[1] = {MHD_OPTION_END};
   } else {
-    if ((mhdFlags & MHD_USE_DEBUG) == MHD_USE_DEBUG) warn << "MHD_OPTION_LISTENING_ADDRESS_REUSE not supported" << warn.endl();
+    warn << "MHD_OPTION_LISTENING_ADDRESS_REUSE not supported" << warn.endl();
     optAddressReUse[0] = {MHD_OPTION_END};
   }
 

@@ -121,9 +121,9 @@ void ExtInfoHost::markAllNonPersistServersForDeletion() {
 bool ExtInfoHost::shouldUpdateFromMaster() const {
   return !masterUpdateThread &&
           ( !masterUpdateQueue.empty() || ( !lastMasterUpdate ||
-                                           (now - lastMasterUpdate >= masterUpdateInterval ||
-                                           (lastMasterUpdate != lastSuccessMasterUpdate &&
-                                           now - lastMasterUpdate >= masterUpdateRetryInterval)) )
+                                            (now - lastMasterUpdate >= masterUpdateInterval ||
+                                            (lastMasterUpdate != lastSuccessMasterUpdate &&
+                                            now - lastMasterUpdate >= masterUpdateRetryInterval)) )
           );
 }
 
@@ -134,7 +134,7 @@ void ExtInfoHost::parseServers(const CString &servers, ParseServersStatus *parse
   markAllNonPersistServersForDeletion();
 
   if (!parseServersStatus) {
-    ParseServersStatus dummy{};
+    static ParseServersStatus dummy{};
     parseServersStatus = &dummy;
   }
 

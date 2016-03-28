@@ -84,8 +84,7 @@ const char *Config::getString(const char *varName, const char *fallback) {
   return varVal;
 }
 
-const char **Config::getStringArray(const char *varName,
-                                    const char **fallback) {
+const char **Config::getStringArray(const char *varName, const char **fallback) {
   CHECK(fallback);
 
   size_t i = 0;

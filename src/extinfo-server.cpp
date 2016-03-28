@@ -202,7 +202,8 @@ const std::string &Server::getUniqueDescription(FString &description) const {
     // Inline Byte-by-Byte comparison is five times
     // faster than std::string::compare().
 
-    if (streq(a, b)) { ++numDups;
+    if (streq(a, b)) {
+      ++numDups;
       if (server == this) dupNum = numDups;
       if (numDups >= 2 && dupNum) break;
     }
@@ -435,7 +436,7 @@ bool Server::extPlayerPing() {
   network::PacketBuf32 pb;
   preparePing(pb);
   pb.addInt(0);
-  pb.addInt(EXT_PLAYERSTATS);
+  pb.addInt(EXT_PLAYERSTATS + extInfoOffset);
   pb.addInt(-1);
   pb.addInt(EXT_EXTENDED_PLAYERSTATS);
   player.lastPing = now;
@@ -448,7 +449,7 @@ bool Server::extUptimePing() {
   network::PacketBuf32 pb;
   preparePing(pb);
   pb.addInt(0);
-  pb.addInt(EXT_UPTIME);
+  pb.addInt(EXT_UPTIME + extInfoOffset);
   pb.addByte(1); // request server mod
   uptime.lastPing = now;
   return sendPing(pb, uptime);

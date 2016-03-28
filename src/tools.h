@@ -566,7 +566,7 @@ public:
   ~tmpAppend() { obj.resize(prevLength); }
 };
 
-#define TmpAppend(obj, str)                                                    \
+#define TmpAppend(obj, str)                                                                                            \
   tmpAppend<decltype(obj)> CONC(__tmpAppend, __COUNTER__)(obj, str)
 
 template <typename T>
@@ -938,8 +938,7 @@ enum FmtMillisFlags : int {
   FMT_ALL = FMT_YEARS | FMT_DAYS | FMT_HOURS | FMT_MINUTES | FMT_SECONDS
 };
 
-const char *fmtMillis(TimeType millis, char *buf, size_t size,
-                      const FmtMillisFlags flags = FMT_ALL);
+const char *fmtMillis(TimeType millis, char *buf, size_t size, const FmtMillisFlags flags = FMT_ALL);
 
 template <typename T, size_t N>
 const char *fmtMillis(const TimeType millis, T (&buf)[N], const FmtMillisFlags flags = FMT_ALL) {
@@ -982,7 +981,7 @@ private:
   TimeType baseTime;
 };
 
-#define benchmark(...)                                                         \
+#define benchmark(...)                                                                                                 \
   benchmark CONC(__benchmark, __COUNTER__) { __VA_ARGS__ }
 
 //
